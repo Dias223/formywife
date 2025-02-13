@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Собери цветочки 🌸</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+            background: url('https://cdn.britannica.com/22/215522-050-8315BB78/green-grass-close-up.jpg') no-repeat center center/cover;
+        }
+        #scoreboard {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <audio id="bg-music" loop>
+        <source src="music/game.mp3" type="audio/mpeg">
+        Ваш браузер не поддерживает аудио.
+    </audio>
+
+    <div id="scoreboard">Очки: <span id="score">0</span> | Время: <span id="timer">30</span> сек</div>
+    <canvas id="gameCanvas"></canvas>
+
+    
+    
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const player = { x: canvas.width / 2, y: canvas.height / 2, size: 30, speed: 5 };
+        let flowers = [];
+        let score = 0;
+        let timeLeft = 30;
+        
+        function spawnFlower() {
+            const flower = {
+                x: Math.random() * (canvas.width - 30),
+                y: Math.random() * (canvas.height - 30),
+                size: 20
+            };
+            flowers.push(flower);
+        }
+        
+        for (let i = 0; i < 25; i++) spawnFlower();spawnFlower();spawnFlower();spawnFlower();
+
+        function drawPlayer() {
+    ctx.font = "30px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("🐝", player.x, player.y);
+}
+
+        
+function drawFlowers() {
+    ctx.font = "25px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    flowers.forEach(flower => {
+        ctx.fillText("🌸", flower.x, flower.y);
+    });
+}
+
+        
+        function checkCollision() {
+            flowers = flowers.filter(flower => {
+                const dist = Math.hypot(player.x - flower.x, player.y - flower.y);
+                if (dist < player.size + flower.size) {
+                    score++;
+                    document.getElementById('score').textContent = score;
+                    for (let i = 0; i < 3; i++) spawnFlower();
+                    return false;
+                }
+                return true;
+            });
+        }
+        
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPlayer();
+            drawFlowers();
+            checkCollision();
+            requestAnimationFrame(update);
+        }
+        
+        const keys = {};
+        window.addEventListener('keydown', e => keys[e.key] = true);
+        window.addEventListener('keyup', e => keys[e.key] = false);
+
+        function movePlayer() {
+            if (keys['ArrowUp'] || keys['w']) player.y -= player.speed;
+            if (keys['ArrowDown'] || keys['s']) player.y += player.speed;
+            if (keys['ArrowLeft'] || keys['a']) player.x -= player.speed;
+            if (keys['ArrowRight'] || keys['d']) player.x += player.speed;
+            setTimeout(movePlayer, 16);
+        }
+        
+        function countdown() {
+            if (timeLeft > 0) {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                setTimeout(countdown, 1000);
+            } else {
+                alert(`Игра окончена! Ты собрал ${score} цветочков!`);
+            }
+        }
+        
+        movePlayer();
+        update();
+        countdown();
+    </script>
+
+<script>
+    document.addEventListener("click", function () {
+        document.getElementById("bg-music").play();
+    }, { once: true }); // Запускаем музыку при первом клике
+</script>
+
+</body>
+</html>
